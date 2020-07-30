@@ -5,6 +5,17 @@
  */
 ;
 (function ($) {
+  // https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md#feature-detection
+  var supportsPassive = false;
+  try {
+    var opts = Object.defineProperty({}, 'passive', {
+      get: function() {
+        supportsPassive = true;
+      }
+    });
+    window.addEventListener("testPassive", null, opts);
+    window.removeEventListener("testPassive", null, opts);
+  } catch (e) {}
 
   var focused = true;
 
@@ -203,7 +214,7 @@
                       if(e.currentTarget._gesture) {
                         e.currentTarget._gesture.addPointer(e.pointerId);
                       }
-                  }, false);
+                  }, supportsPassive ? { passive: true } : false);
                   that.addEventListener("MSGestureTap", function (e){
                       e.preventDefault();
                       var $slide = $(this),
@@ -467,8 +478,8 @@
                          (reverse) ? (slider.last - slider.currentSlide + slider.cloneOffset) * cwidth : (slider.currentSlide + slider.cloneOffset) * cwidth;
                 startX = (vertical) ? localY : localX;
                 startY = (vertical) ? localX : localY;
-                el.addEventListener('touchmove', onTouchMove, false);
-                el.addEventListener('touchend', onTouchEnd, false);
+                el.addEventListener('touchmove', onTouchMove, supportsPassive ? { passive: true } : false);
+                el.addEventListener('touchend', onTouchEnd, supportsPassive ? { passive: true } : false);
               }
             };
 
@@ -515,15 +526,15 @@
               offset = null;
             };
 
-            el.addEventListener('touchstart', onTouchStart, false);
+            el.addEventListener('touchstart', onTouchStart, supportsPassive ? { passive: true } : false);
         }else{
             el.style.msTouchAction = "none";
             el._gesture = new MSGesture();
             el._gesture.target = el;
-            el.addEventListener("MSPointerDown", onMSPointerDown, false);
+            el.addEventListener("MSPointerDown", onMSPointerDown, supportsPassive ? { passive: true } : false);
             el._slider = slider;
-            el.addEventListener("MSGestureChange", onMSGestureChange, false);
-            el.addEventListener("MSGestureEnd", onMSGestureEnd, false);
+            el.addEventListener("MSGestureChange", onMSGestureChange, supportsPassive ? { passive: true } : false);
+            el.addEventListener("MSGestureEnd", onMSGestureEnd, supportsPassive ? { passive: true } : false);
 
             function onMSPointerDown(e){
                 e.stopPropagation();
